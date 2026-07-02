@@ -32,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/risks/new" className="hover:underline underline-offset-4">New risk</Link>
               <Link href="/issues" className="hover:underline underline-offset-4">Issues</Link>
               <Link href="/import" className="hover:underline underline-offset-4">Import</Link>
+              <Link href="/help" className="hover:underline underline-offset-4">Help</Link>
             </nav>
             <Link
               href="/projects"
