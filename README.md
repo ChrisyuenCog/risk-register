@@ -53,7 +53,11 @@ npm run db:seed            # sample project, categories, and risks
 npm run dev                # http://localhost:3000
 ```
 
-Run the scoring-engine tests with `npm test`.
+Run the tests with `npm test`.
+
+Deploying? See [docs/DEPLOYMENT-AZURE.md](docs/DEPLOYMENT-AZURE.md) for
+the Azure App Service + PostgreSQL Flexible Server setup, including
+platform-level Entra ID authentication.
 
 ### Database access
 
