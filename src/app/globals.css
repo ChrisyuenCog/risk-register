@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+body { @apply bg-field text-ink antialiased; }
+
+@layer components {
+  .card { @apply bg-paper border border-line rounded-sm; }
+  .lbl { @apply block text-[11px] uppercase tracking-[0.08em] text-ink/60 mb-1; }
+  .inp { @apply w-full border border-line rounded-sm bg-paper px-2 py-1.5 text-sm focus:outline-none focus:border-steel; }
+  .btn { @apply inline-flex items-center gap-1.5 border border-ink bg-ink text-paper text-sm px-3 py-1.5 rounded-sm hover:bg-ink/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel; }
+  .btn-quiet { @apply inline-flex items-center gap-1.5 border border-line bg-paper text-ink text-sm px-3 py-1.5 rounded-sm hover:border-ink/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-steel; }
+  .th { @apply text-left text-[11px] uppercase tracking-[0.08em] text-ink/60 font-medium px-3 py-2 border-b border-line; }
+  .td { @apply px-3 py-2 border-b border-line align-top text-sm; }
+}

@@ -13,4 +13,8 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npx prisma validate
+      - run: npx prisma generate
       - run: npm test
+      - run: npm run build
+        env:
+          DATABASE_URL: "postgresql://app:app@localhost:5432/riskregister"

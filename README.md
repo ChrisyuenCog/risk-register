@@ -42,20 +42,51 @@ This application addresses each of those directly.
 
 ## Getting started
 
+Requirements: Node.js 20+, Docker (or any PostgreSQL 14+).
+
 ```bash
-npm install
-cp .env.example .env   # set DATABASE_URL
-npx prisma migrate dev
-npm run dev
+npm install                # installs deps and downloads Prisma engines
+docker compose up -d       # local PostgreSQL on :5432
+cp .env.example .env       # DATABASE_URL already matches docker-compose
+npx prisma migrate deploy  # apply migrations
+npm run db:seed            # sample project, categories, and risks
+npm run dev                # http://localhost:3000
 ```
+
+Run the scoring-engine tests with `npm test`.
+
+### Database access
+
+Prisma is configured with the `driverAdapters` preview feature and the
+`pg` driver adapter (`src/server/db.ts`), which works in standard and
+serverless deployments alike. Migrations live in `prisma/migrations/`
+and are applied with `prisma migrate deploy`.
+
+## What exists today (Phase 1 — core register)
+
+- Dashboard: exposure profile, category distribution, live 5×5 matrix
+  heatmap, appetite breaches, overdue actions, top risks
+- Register: filterable/searchable table with inherent & residual
+  rankings and per-risk appetite breach flags
+- Risks: create with auto category-prefixed refs (HS1, PM2, …),
+  inherent + residual scoring across Cost/Time/Quality/Reputation,
+  versioned re-assessment, per-risk appetite, mitigation actions,
+  progress notes, one-click escalation to the issue log, close/reopen
+- Audit: append-only log of every mutation, shown on each risk
+
+Not yet built (see roadmap below): authentication/RBAC, governance
+review cycles and assurance sign-off, notifications, Excel import and
+exports, issue & change-control screens.
 
 ## Repository layout
 
 ```
 docs/            Requirements, data model, scoring methodology
-prisma/          Database schema and migrations
+prisma/          Database schema, migrations, seed script
+src/app/         Next.js App Router pages (dashboard, register, risk)
+src/components/  Shared UI (rating badges, 5×5 matrix, score fields)
 src/lib/         Domain logic (risk scoring engine, matrix)
-src/types/       Shared TypeScript domain types
+src/server/      Prisma client, server actions, audit helper, queries
 .github/         CI workflows
 ```
 
