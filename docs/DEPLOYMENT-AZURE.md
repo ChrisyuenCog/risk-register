@@ -98,7 +98,7 @@ values into GitHub, click one workflow, and switch on authentication.
    - **Subscription**: your main subscription is fine (it doesn't have
      to match the database's).
    - **Publish**: **Code**.
-   - **Runtime stack**: **Node 20 LTS**.
+   - **Runtime stack**: **Node 22 LTS**.
    - **Operating System**: **Linux**.
    - **Region**: same as the database.
    - **Pricing plan**: create new → click **Explore pricing plans** /

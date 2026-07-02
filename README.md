@@ -42,7 +42,7 @@ This application addresses each of those directly.
 
 ## Getting started
 
-Requirements: Node.js 20+, Docker (or any PostgreSQL 14+).
+Requirements: Node.js 20+ (22 LTS recommended), Docker (or any PostgreSQL 14+).
 
 ```bash
 npm install                # installs deps and downloads Prisma engines
