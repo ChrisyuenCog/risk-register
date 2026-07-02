@@ -56,13 +56,15 @@ export async function dashboardData(projectId: string) {
   const open = register.filter((r) => r.status === "OPEN");
 
   const byRanking = new Map<string, number>();
-  const byCategory = new Map<string, number>();
+  const byCategory = new Map<string, { id: string; n: number }>();
   const matrixCounts = new Map<string, number>();
 
   for (const r of open) {
     if (!r.residual) continue;
     byRanking.set(r.residual.combinedRanking, (byRanking.get(r.residual.combinedRanking) ?? 0) + 1);
-    byCategory.set(r.category.code, (byCategory.get(r.category.code) ?? 0) + 1);
+    const cat = byCategory.get(r.category.code) ?? { id: r.categoryId, n: 0 };
+    cat.n += 1;
+    byCategory.set(r.category.code, cat);
     const key = `${r.residual.likelihood}:${r.residual.combinedImpact}`;
     matrixCounts.set(key, (matrixCounts.get(key) ?? 0) + 1);
   }

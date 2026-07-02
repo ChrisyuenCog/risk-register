@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Ranking } from "@prisma/client";
 import { rank } from "@/lib/scoring";
 
@@ -38,10 +39,13 @@ export function Matrix({
   counts,
   inherent,
   residual,
+  cellHref,
 }: {
   counts?: Map<string, number>;
   inherent?: Cell;
   residual?: Cell;
+  /** When set, populated cells become links (e.g. to a filtered register). */
+  cellHref?: (likelihood: number, impact: number) => string;
 }) {
   const max = counts ? Math.max(1, ...Array.from(counts.values())) : 1;
   return (
@@ -57,13 +61,9 @@ export function Matrix({
               const n = counts?.get(`${likelihood}:${impact}`) ?? 0;
               const isInh = inherent?.likelihood === likelihood && inherent?.impact === impact;
               const isRes = residual?.likelihood === likelihood && residual?.impact === impact;
-              return (
-                <div
-                  key={`${likelihood}:${impact}`}
-                  className={`relative aspect-square ${RANKING_BG[ranking]} flex items-center justify-center`}
-                  style={counts ? { opacity: n === 0 ? 0.18 : 0.45 + 0.55 * (n / max) } : undefined}
-                  title={`Likelihood ${likelihood} × Impact ${impact} — ${RANKING_LABEL[ranking]}${counts ? ` — ${n} risk${n === 1 ? "" : "s"}` : ""}`}
-                >
+              const cellTitle = `Likelihood ${likelihood} × Impact ${impact} — ${RANKING_LABEL[ranking]}${counts ? ` — ${n} risk${n === 1 ? "" : "s"}` : ""}`;
+              const inner = (
+                <>
                   {counts && n > 0 && (
                     <span className="text-paper text-xs font-semibold font-mono">{n}</span>
                   )}
@@ -73,6 +73,26 @@ export function Matrix({
                   {isRes && (
                     <span className="absolute inset-1 border-2 border-paper rounded-sm bg-paper/20" title="Residual" />
                   )}
+                </>
+              );
+              const cellClass = `relative aspect-square ${RANKING_BG[ranking]} flex items-center justify-center`;
+              const cellStyle = counts ? { opacity: n === 0 ? 0.18 : 0.45 + 0.55 * (n / max) } : undefined;
+              if (cellHref && n > 0) {
+                return (
+                  <Link
+                    key={`${likelihood}:${impact}`}
+                    href={cellHref(likelihood, impact)}
+                    className={`${cellClass} hover:ring-2 hover:ring-ink hover:z-10`}
+                    style={cellStyle}
+                    title={`${cellTitle} — click to view`}
+                  >
+                    {inner}
+                  </Link>
+                );
+              }
+              return (
+                <div key={`${likelihood}:${impact}`} className={cellClass} style={cellStyle} title={cellTitle}>
+                  {inner}
                 </div>
               );
             })}

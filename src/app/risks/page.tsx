@@ -3,13 +3,14 @@ import { db } from "@/server/db";
 import { loadRegister, sortRegister, type SortKey } from "@/server/register";
 import { getCurrentProject } from "@/server/project";
 import { RatingBadge, RANKING_LABEL } from "@/components/rating";
+import type { Ranking } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: { status?: string; category?: string; q?: string; sort?: string; dir?: string };
+  searchParams: { status?: string; category?: string; q?: string; sort?: string; dir?: string; rank?: string; l?: string; i?: string };
 }) {
   const project = await getCurrentProject();
   const categories = await db.riskCategory.findMany({
@@ -18,7 +19,9 @@ export default async function RegisterPage({
   });
   const sort = (searchParams.sort as SortKey) || "ref";
   const dir = searchParams.dir === "desc" ? "desc" : "asc";
-  const rows = sortRegister(
+  const cellL = searchParams.l ? Number(searchParams.l) : undefined;
+  const cellI = searchParams.i ? Number(searchParams.i) : undefined;
+  let rows = sortRegister(
     await loadRegister({
       projectId: project.id,
       status: searchParams.status,
@@ -28,6 +31,19 @@ export default async function RegisterPage({
     sort,
     dir
   );
+  if (searchParams.rank) rows = rows.filter((r) => r.residual?.combinedRanking === searchParams.rank);
+  if (cellL && cellI)
+    rows = rows.filter((r) => r.residual?.likelihood === cellL && r.residual?.combinedImpact === cellI);
+
+  const drillQs = new URLSearchParams();
+  if (searchParams.status) drillQs.set("status", searchParams.status);
+  if (searchParams.category) drillQs.set("category", searchParams.category);
+  if (searchParams.q) drillQs.set("q", searchParams.q);
+  const drillLabel = searchParams.rank
+    ? `Residual rating: ${RANKING_LABEL[searchParams.rank as Ranking] ?? searchParams.rank}`
+    : cellL && cellI
+      ? `Matrix cell: likelihood ${cellL} × impact ${cellI}`
+      : null;
 
   const SortTh = ({ k, children }: { k: SortKey; children: React.ReactNode }) => {
     const next = sort === k && dir === "asc" ? "desc" : "asc";
@@ -35,6 +51,9 @@ export default async function RegisterPage({
     if (searchParams.q) qs.set("q", searchParams.q);
     if (searchParams.status) qs.set("status", searchParams.status);
     if (searchParams.category) qs.set("category", searchParams.category);
+    if (searchParams.rank) qs.set("rank", searchParams.rank);
+    if (searchParams.l) qs.set("l", searchParams.l);
+    if (searchParams.i) qs.set("i", searchParams.i);
     qs.set("sort", k);
     qs.set("dir", next);
     return (
@@ -79,6 +98,17 @@ export default async function RegisterPage({
         </label>
         <button className="btn-quiet">Apply</button>
       </form>
+
+      {drillLabel && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="border border-steel text-steel rounded-sm px-2 py-1">
+            {drillLabel} · {rows.length} risk{rows.length === 1 ? "" : "s"}
+          </span>
+          <Link href={`/risks?${drillQs.toString()}`} className="text-ink/60 hover:underline underline-offset-4">
+            Clear
+          </Link>
+        </div>
+      )}
 
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[56rem]">

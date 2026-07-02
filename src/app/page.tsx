@@ -30,30 +30,40 @@ export default async function Dashboard() {
               const n = d.byRanking.get(rank) ?? 0;
               const pct = Math.round((n / openWithResidual) * 100);
               return (
-                <div key={rank} className="grid grid-cols-[6rem_1fr_5rem] items-center gap-2 text-sm">
+                <Link
+                  key={rank}
+                  href={`/risks?status=OPEN&rank=${rank}`}
+                  className={`grid grid-cols-[6rem_1fr_5rem] items-center gap-2 text-sm rounded-sm -mx-1 px-1 ${n > 0 ? "hover:bg-field" : "pointer-events-none"}`}
+                  title={n > 0 ? `View the ${n} open ${RANKING_LABEL[rank]} risk${n === 1 ? "" : "s"}` : undefined}
+                >
                   <span className="text-ink/70">{RANKING_LABEL[rank]}</span>
                   <div className="h-4 bg-field rounded-sm overflow-hidden">
                     <div className={`h-full ${RANKING_BG[rank]}`} style={{ width: `${pct}%` }} />
                   </div>
                   <span className="font-mono text-xs text-ink/70">{n} · {pct}%</span>
-                </div>
+                </Link>
               );
             })}
           </div>
 
           <h2 className="lbl pt-2">Distribution by category</h2>
           <div className="flex flex-wrap gap-2">
-            {Array.from(d.byCategory.entries()).map(([code, n]) => (
-              <span key={code} className="border border-line rounded-sm px-2 py-1 text-sm font-mono">
-                {code} <b>{n}</b>
-              </span>
+            {Array.from(d.byCategory.entries()).map(([code, c]) => (
+              <Link
+                key={code}
+                href={`/risks?status=OPEN&category=${c.id}`}
+                className="border border-line rounded-sm px-2 py-1 text-sm font-mono hover:border-ink/50 hover:bg-field"
+                title={`View open ${code} risks`}
+              >
+                {code} <b>{c.n}</b>
+              </Link>
             ))}
           </div>
         </section>
 
         <section className="card p-4">
           <h2 className="lbl">Register heatmap — residual position</h2>
-          <Matrix counts={d.matrixCounts} />
+          <Matrix counts={d.matrixCounts} cellHref={(l, i) => `/risks?status=OPEN&l=${l}&i=${i}`} />
         </section>
       </div>
 
