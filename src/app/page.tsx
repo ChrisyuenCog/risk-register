@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { dashboardData } from "@/server/register";
+import { getCurrentProject } from "@/server/project";
 import { Matrix, RatingBadge, RANKING_LABEL, RANKING_BG } from "@/components/rating";
 import type { Ranking } from "@prisma/client";
 
@@ -8,13 +9,14 @@ export const dynamic = "force-dynamic";
 const ORDER: Ranking[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "VERY_LOW"];
 
 export default async function Dashboard() {
-  const d = await dashboardData();
+  const project = await getCurrentProject();
+  const d = await dashboardData(project.id);
   const openWithResidual = d.open.filter((r) => r.residual).length || 1;
 
   return (
     <div className="space-y-6">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Live dashboard</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Live dashboard <span className="text-ink/50 font-normal">— {project.name}</span></h1>
         <p className="text-sm text-ink/60">
           {d.open.length} open · {d.escalated} escalated · {d.closed} closed
         </p>

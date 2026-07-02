@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/server/db";
 import { RatingBadge } from "@/components/rating";
+import { getCurrentProject } from "@/server/project";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ const RAG_STYLE: Record<string, string> = {
 };
 
 export default async function IssuesPage() {
+  const project = await getCurrentProject();
   const issues = await db.issue.findMany({
+    where: { projectId: project.id },
     include: { risk: true },
     orderBy: { raisedAt: "desc" },
   });

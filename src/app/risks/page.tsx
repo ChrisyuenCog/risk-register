@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/server/db";
-import { loadRegister } from "@/server/register";
+import { loadRegister, sortRegister, type SortKey } from "@/server/register";
+import { getCurrentProject } from "@/server/project";
 import { RatingBadge, RANKING_LABEL } from "@/components/rating";
 
 export const dynamic = "force-dynamic";
@@ -8,19 +9,48 @@ export const dynamic = "force-dynamic";
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: { status?: string; category?: string; q?: string };
+  searchParams: { status?: string; category?: string; q?: string; sort?: string; dir?: string };
 }) {
-  const categories = await db.riskCategory.findMany({ orderBy: { code: "asc" } });
-  const rows = await loadRegister({
-    status: searchParams.status,
-    categoryId: searchParams.category,
-    q: searchParams.q,
+  const project = await getCurrentProject();
+  const categories = await db.riskCategory.findMany({
+    where: { projectId: project.id },
+    orderBy: { code: "asc" },
   });
+  const sort = (searchParams.sort as SortKey) || "ref";
+  const dir = searchParams.dir === "desc" ? "desc" : "asc";
+  const rows = sortRegister(
+    await loadRegister({
+      projectId: project.id,
+      status: searchParams.status,
+      categoryId: searchParams.category,
+      q: searchParams.q,
+    }),
+    sort,
+    dir
+  );
+
+  const SortTh = ({ k, children }: { k: SortKey; children: React.ReactNode }) => {
+    const next = sort === k && dir === "asc" ? "desc" : "asc";
+    const qs = new URLSearchParams();
+    if (searchParams.q) qs.set("q", searchParams.q);
+    if (searchParams.status) qs.set("status", searchParams.status);
+    if (searchParams.category) qs.set("category", searchParams.category);
+    qs.set("sort", k);
+    qs.set("dir", next);
+    return (
+      <th className="th">
+        <Link href={`/risks?${qs.toString()}`} className="inline-flex items-center gap-1 hover:text-ink">
+          {children}
+          <span className="text-[9px]">{sort === k ? (dir === "asc" ? "▲" : "▼") : "△▽"}</span>
+        </Link>
+      </th>
+    );
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Risk register</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Risk register <span className="text-ink/50 font-normal">— {project.name}</span></h1>
         <Link href="/risks/new" className="btn">New risk</Link>
       </div>
 
@@ -54,14 +84,14 @@ export default async function RegisterPage({
         <table className="w-full min-w-[56rem]">
           <thead>
             <tr>
-              <th className="th">Ref</th>
-              <th className="th">Risk</th>
-              <th className="th">Category</th>
-              <th className="th">Owner(s)</th>
-              <th className="th">Inherent</th>
-              <th className="th">Residual</th>
-              <th className="th">Appetite</th>
-              <th className="th">Status</th>
+              <SortTh k="ref">Ref</SortTh>
+              <SortTh k="title">Risk</SortTh>
+              <SortTh k="category">Category</SortTh>
+              <SortTh k="owner">Owner(s)</SortTh>
+              <SortTh k="inherent">Inherent</SortTh>
+              <SortTh k="residual">Residual</SortTh>
+              <SortTh k="appetite">Appetite</SortTh>
+              <SortTh k="status">Status</SortTh>
             </tr>
           </thead>
           <tbody>

@@ -42,13 +42,18 @@ export async function ensureCoreData() {
     });
   }
 
-  for (const [code, name] of CATEGORIES) {
-    await db.riskCategory.upsert({
-      where: { projectId_code: { projectId: project.id, code } },
-      update: {},
-      create: { projectId: project.id, code, name },
-    });
-  }
+  await ensureCategories(project.id);
 
   return project;
+}
+
+/** Create the standard category set for a project (idempotent). */
+export async function ensureCategories(projectId: string) {
+  for (const [code, name] of CATEGORIES) {
+    await db.riskCategory.upsert({
+      where: { projectId_code: { projectId, code } },
+      update: {},
+      create: { projectId, code, name },
+    });
+  }
 }
