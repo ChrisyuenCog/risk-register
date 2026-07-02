@@ -1,0 +1,74 @@
+# RiskRegister — Professional Project Risk Management
+
+A commercial-grade risk register application for professional project risk management, replacing spreadsheet-based registers with a governed, auditable, collaborative platform.
+
+Born from real-world practice: the requirements are derived from an operating risk register (51 risks, 8 categories), a quarterly governance review process, and management-team feedback on assurance, risk appetite, and dashboarding.
+
+## Why
+
+Spreadsheet risk registers break down at scale:
+
+- No audit trail of who changed what, when, and why
+- No workflow for pre-meeting review and assurance by risk owners
+- Risk appetite set by broad category instead of per-risk thresholds
+- Dashboards rebuilt by hand for every governance meeting
+- No notifications when risks change between meetings
+- Risks that become issues are re-keyed manually into a separate log
+
+This application addresses each of those directly.
+
+## Core capabilities (target)
+
+- **Risk lifecycle** — identify, assess, mitigate, monitor, close, or escalate to issue
+- **5×5 scoring model** — likelihood × impact across four dimensions (Cost, Time, Quality, Reputation), with automatic Inherent and Mitigated (residual) risk ratings via the impact/probability matrix
+- **Risk appetite per risk** — thresholds set and confirmed at the individual risk level, with breach indicators
+- **Mitigation actions** — multiple actions per risk, each with an owner, due date, and status
+- **Governance workflow** — pre-meeting review assignments for risk owners/leads, sign-off ("assurance") tracking, live meeting review mode, and decision/action logging
+- **Issue log & change control log** — one-click conversion of a risk to an issue (preserving the risk reference), RAG progress tracking, and a change control register
+- **Dashboards** — live exposure profile, distribution by category/rating, trend over time, and change-since-last-review indicators
+- **Notifications** — email digests to the management team when significant risks change between meetings
+- **Audit trail** — full immutable history of every change (a recurring audit finding for records management)
+- **RBAC** — administrator, risk manager, risk owner, action owner, governance viewer
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js 14 (App Router), React, TypeScript, Tailwind CSS |
+| Backend | Next.js API routes / server actions |
+| Database | PostgreSQL via Prisma ORM |
+| Auth | NextAuth.js (SSO-ready: Azure AD / Google) |
+| CI | GitHub Actions |
+
+## Getting started
+
+```bash
+npm install
+cp .env.example .env   # set DATABASE_URL
+npx prisma migrate dev
+npm run dev
+```
+
+## Repository layout
+
+```
+docs/            Requirements, data model, scoring methodology
+prisma/          Database schema and migrations
+src/lib/         Domain logic (risk scoring engine, matrix)
+src/types/       Shared TypeScript domain types
+.github/         CI workflows
+```
+
+## Documentation
+
+- [Requirements specification](docs/REQUIREMENTS.md)
+- [Data model](docs/DATA_MODEL.md)
+- [Scoring methodology](docs/SCORING.md)
+
+## Status
+
+🚧 Foundation stage — requirements, data model, and scoring engine are in place. See [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) for the phased roadmap.
+
+## License
+
+Proprietary — all rights reserved (update as appropriate).

@@ -1,0 +1,241 @@
+// RiskRegister — Prisma schema (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RISK_MANAGER
+  RISK_OWNER
+  ACTION_OWNER
+  GOVERNANCE
+  VIEWER
+}
+
+enum RiskStatus {
+  OPEN
+  CLOSED
+  ESCALATED
+}
+
+enum Ranking {
+  VERY_LOW
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AssessmentKind {
+  INHERENT
+  RESIDUAL
+}
+
+enum ActionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+  OVERDUE
+}
+
+enum AssuranceStatus {
+  PENDING
+  CONFIRMED
+  CHANGES_PROPOSED
+  CONCERN
+}
+
+enum Rag {
+  RED
+  AMBER
+  GREEN
+}
+
+model User {
+  id        String          @id @default(cuid())
+  email     String          @unique
+  name      String
+  members   ProjectMember[]
+  audits    AuditLog[]
+  createdAt DateTime        @default(now())
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  client      String?
+  division    String?
+  members     ProjectMember[]
+  categories  RiskCategory[]
+  risks       Risk[]
+  issues      Issue[]
+  changes     ChangeRequest[]
+  reviews     ReviewCycle[]
+  createdAt   DateTime        @default(now())
+}
+
+model ProjectMember {
+  id        String  @id @default(cuid())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  role      Role
+  @@unique([projectId, userId])
+}
+
+model RiskCategory {
+  id        String  @id @default(cuid())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  code      String // e.g. HS, HR, PM, OP, FN, PL, EN, IT
+  name      String
+  defaultAppetite Ranking @default(MEDIUM)
+  risks     Risk[]
+  @@unique([projectId, code])
+}
+
+model Risk {
+  id                 String           @id @default(cuid())
+  project            Project          @relation(fields: [projectId], references: [id])
+  projectId          String
+  ref                String // e.g. "HS1" — category code + sequence
+  title              String
+  description        String
+  impactDescription  String
+  category           RiskCategory     @relation(fields: [categoryId], references: [id])
+  categoryId         String
+  impactArea         String? // People / Operations / Commercial / Reputational / Quality / Systems
+  status             RiskStatus       @default(OPEN)
+  ownerNames         String // comma-separated display; owners may also be Users
+  appetiteMaxRanking Ranking          @default(MEDIUM) // per-risk appetite threshold
+  appetiteConfirmed  Boolean          @default(false)
+  assessments        RiskAssessment[]
+  actions            MitigationAction[]
+  notes              ProgressNote[]
+  assurances         AssuranceRecord[]
+  issue              Issue?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  @@unique([projectId, ref])
+}
+
+model RiskAssessment {
+  id                 String         @id @default(cuid())
+  risk               Risk           @relation(fields: [riskId], references: [id])
+  riskId             String
+  kind               AssessmentKind
+  likelihood         Int // 1–5
+  costImpact         Int // 1–5
+  timeImpact         Int
+  qualityImpact      Int
+  reputationImpact   Int
+  // Derived by src/lib/scoring.ts — never hand-set:
+  costRanking        Ranking
+  timeRanking        Ranking
+  qualityRanking     Ranking
+  reputationRanking  Ranking
+  combinedImpact     Int // max of the four dimensions
+  combinedRanking    Ranking
+  assessedAt         DateTime       @default(now())
+  assessedBy         String?
+}
+
+model MitigationAction {
+  id          String       @id @default(cuid())
+  risk        Risk         @relation(fields: [riskId], references: [id])
+  riskId      String
+  sequence    Int
+  description String
+  ownerName   String?
+  targetDate  DateTime?
+  status      ActionStatus @default(NOT_STARTED)
+  updatedAt   DateTime     @updatedAt
+}
+
+model ProgressNote {
+  id        String   @id @default(cuid())
+  risk      Risk     @relation(fields: [riskId], references: [id])
+  riskId    String
+  body      String
+  author    String
+  createdAt DateTime @default(now())
+}
+
+model ReviewCycle {
+  id             String            @id @default(cuid())
+  project        Project           @relation(fields: [projectId], references: [id])
+  projectId      String
+  name           String // e.g. "Q3 2026 Governance Review"
+  distributedAt  DateTime?
+  meetingDate    DateTime?
+  decisionsNotes String?
+  assurances     AssuranceRecord[]
+}
+
+model AssuranceRecord {
+  id        String          @id @default(cuid())
+  cycle     ReviewCycle     @relation(fields: [cycleId], references: [id])
+  cycleId   String
+  risk      Risk            @relation(fields: [riskId], references: [id])
+  riskId    String
+  ownerName String
+  status    AssuranceStatus @default(PENDING)
+  comment   String?
+  signedAt  DateTime?
+  @@unique([cycleId, riskId, ownerName])
+}
+
+model Issue {
+  id           String    @id @default(cuid())
+  project      Project   @relation(fields: [projectId], references: [id])
+  projectId    String
+  risk         Risk?     @relation(fields: [riskId], references: [id])
+  riskId       String?   @unique
+  ref          String // e.g. "I3"
+  description  String
+  raisedBy     String
+  raisedAt     DateTime  @default(now())
+  likelyImpact String?
+  severity     Ranking   @default(MEDIUM)
+  actions      String?
+  actionOwner  String?
+  rag          Rag       @default(GREEN)
+  targetDate   DateTime?
+  resolvedAt   DateTime?
+  progress     String?
+  @@unique([projectId, ref])
+}
+
+model ChangeRequest {
+  id            String    @id @default(cuid())
+  project       Project   @relation(fields: [projectId], references: [id])
+  projectId     String
+  ref           String // e.g. "C1"
+  description   String
+  raisedBy      String
+  effectiveDate DateTime?
+  reason        String?
+  action        String?
+  agreedChange  String?
+  closed        Boolean   @default(false)
+  @@unique([projectId, ref])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     User?    @relation(fields: [actorId], references: [id])
+  actorId   String?
+  entity    String // e.g. "Risk"
+  entityId  String
+  action    String // CREATE / UPDATE / DELETE / ESCALATE / SIGN_OFF
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+}
