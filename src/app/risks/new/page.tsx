@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { ensureCoreData } from "@/server/bootstrap";
 import { createRisk } from "@/server/actions";
 import { ScoreFields } from "@/components/score-fields";
 
@@ -7,6 +8,7 @@ export const dynamic = "force-dynamic";
 const IMPACT_AREAS = ["People", "Operations", "Commercial", "Reputational", "Quality", "Systems"];
 
 export default async function NewRiskPage() {
+  await ensureCoreData();
   const categories = await db.riskCategory.findMany({ orderBy: { code: "asc" } });
 
   return (

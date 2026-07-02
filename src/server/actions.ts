@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
+import { ensureCoreData } from "@/server/bootstrap";
 import { assess, type Ranking as RankingT } from "@/lib/scoring";
 import type { AssessmentKind, Ranking } from "@prisma/client";
 
@@ -70,7 +71,7 @@ async function nextRef(projectId: string, categoryId: string) {
 
 export async function createRisk(form: FormData) {
   const data = riskSchema.parse(Object.fromEntries(form));
-  const project = await db.project.findFirstOrThrow();
+  const project = await ensureCoreData();
   const category = await db.riskCategory.findUniqueOrThrow({ where: { id: data.categoryId } });
 
   const risk = await db.risk.create({

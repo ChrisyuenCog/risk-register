@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/server/db";
+import { ensureCoreData } from "@/server/bootstrap";
 import { audit } from "@/server/audit";
 import { parseRegisterWorkbook, type ImportRow } from "@/server/import-core";
 import { assess } from "@/lib/scoring";
@@ -39,7 +40,7 @@ export async function importRegister(form: FormData) {
   }
 
   const { rows, errors } = parseRegisterWorkbook(await (file as File).arrayBuffer());
-  const project = await db.project.findFirstOrThrow();
+  const project = await ensureCoreData();
   const categories = await db.riskCategory.findMany({ where: { projectId: project.id } });
   const byCode = new Map(categories.map((c) => [c.code, c]));
 
