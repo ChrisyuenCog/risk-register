@@ -73,10 +73,13 @@ and are applied with `prisma migrate deploy`.
   versioned re-assessment, per-risk appetite, mitigation actions,
   progress notes, one-click escalation to the issue log, close/reopen
 - Audit: append-only log of every mutation, shown on each risk
+- Excel import: migrate an existing register from the downloadable
+  .xlsx template (rankings recomputed by the scoring engine on import)
+- Issue log: escalated and standalone issues with severity and RAG
 
 Not yet built (see roadmap below): authentication/RBAC, governance
-review cycles and assurance sign-off, notifications, Excel import and
-exports, issue & change-control screens.
+review cycles and assurance sign-off, notifications, exports, and the
+change-control log.
 
 ## Repository layout
 

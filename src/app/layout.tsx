@@ -20,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" className="hover:underline underline-offset-4">Dashboard</Link>
               <Link href="/risks" className="hover:underline underline-offset-4">Register</Link>
               <Link href="/risks/new" className="hover:underline underline-offset-4">New risk</Link>
+              <Link href="/issues" className="hover:underline underline-offset-4">Issues</Link>
+              <Link href="/import" className="hover:underline underline-offset-4">Import</Link>
             </nav>
           </div>
         </header>
