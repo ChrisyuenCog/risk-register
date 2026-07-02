@@ -17,18 +17,23 @@ describe("impact vs probability matrix", () => {
 });
 
 describe("assess() against real register rows", () => {
-  it("HS1 Travel safety: L2, impacts 3/3/2/3 → Medium, combined importance 6", () => {
+  // The source workbook's Impact-vs-Probability matrix (and docs/SCORING.md)
+  // give I3×P2 = Low. The old register's ranking cells said Medium for this
+  // row, but those cells were internally inconsistent (importance 2, 3 and 4
+  // each appear with two different labels across the sheet) and are not
+  // authoritative; the matrix is.
+  it("HS1 Travel safety: L2, impacts 3/3/2/3 → Low per the matrix, combined importance 6", () => {
     const r = assess({
       likelihood: 2,
       impacts: { cost: 3, time: 3, quality: 2, reputation: 3 },
     });
     expect(r.cost.importance).toBe(6);
-    expect(r.cost.ranking).toBe("MEDIUM");
+    expect(r.cost.ranking).toBe("LOW");
     expect(r.quality.importance).toBe(4);
     expect(r.quality.ranking).toBe("LOW");
     expect(r.combinedImpact).toBe(3);
     expect(r.combinedImportance).toBe(6);
-    expect(r.combinedRanking).toBe("MEDIUM");
+    expect(r.combinedRanking).toBe("LOW");
   });
 
   it("PM2 Deliverables clarity: L4, impacts 4/4/4/2 → High 16", () => {
