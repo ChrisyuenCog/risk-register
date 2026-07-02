@@ -29,7 +29,7 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Package
-        run: zip -qr app.zip .next public package.json package-lock.json next.config.mjs node_modules prisma -x ".next/cache/*"
+        run: zip -qry app.zip .next public package.json package-lock.json next.config.mjs node_modules prisma -x ".next/cache/*"
 
       - name: Deploy
         uses: azure/webapps-deploy@v3
