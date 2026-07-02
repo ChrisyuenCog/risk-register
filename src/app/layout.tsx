@@ -16,12 +16,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <header className="bg-ink text-paper">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-5">
             <Link href="/" className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.png"
-                alt="Cognition Learning Group"
-                className="h-9 w-auto rounded-sm bg-white px-1.5 py-1"
-              />
+              <span className="inline-flex items-center rounded-sm bg-white px-2 py-1.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.png"
+                  alt="Cognition Learning Group"
+                  width={109}
+                  height={37}
+                  className="block"
+                />
+              </span>
               <span className="font-semibold tracking-tight text-lg">
                 Risk<span className="text-paper/60">Register</span>
               </span>
