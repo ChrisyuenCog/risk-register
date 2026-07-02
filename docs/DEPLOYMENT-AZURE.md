@@ -3,6 +3,14 @@
 Written for someone who has used **Azure Static Web Apps** before but not
 App Service or Azure PostgreSQL. Allow 30–45 minutes end to end.
 
+**Cost plan used in this guide:** the app runs on the **F1 Free** App
+Service tier (£0, with a ~30-second wake-up after idle periods), and the
+database — the only paid component — is created in an **Azure Sponsorship
+subscription** if one with remaining credit is available (consuming
+credit, not cash), otherwise in the main subscription at roughly
+£12–14/month, where it can be **stopped between review cycles** to pause
+compute billing.
+
 ## How this differs from what you know from SWA
 
 With Static Web Apps, Azure built your site from GitHub and served files
@@ -30,9 +38,17 @@ values into GitHub, click one workflow, and switch on authentication.
 
 ## Part 1 — Create the PostgreSQL database (~10 min)
 
+0. **Check sponsorship credit first (optional but worth 2 minutes):**
+   Portal → **Subscriptions** → open **Microsoft Azure Sponsorship** →
+   the Overview / Cost Management blades show remaining credit and
+   expiry. If there's usable credit, create the database (this Part) in
+   *that* subscription; the web app can live in a different subscription
+   without any issue — the connection string doesn't care.
 1. Portal → **Create a resource** → search **"Azure Database for
    PostgreSQL Flexible Server"** → **Create**.
 2. **Basics** tab:
+   - **Subscription**: the Sponsorship subscription if it has credit,
+     otherwise your main one.
    - **Resource group**: create one, e.g. `rg-risk-register` (as with
      SWA, it's just the folder everything lives in).
    - **Server name**: globally unique, e.g. `riskregister-db-<yourname>`.
@@ -79,12 +95,19 @@ values into GitHub, click one workflow, and switch on authentication.
    - **Resource group**: the same `rg-risk-register`.
    - **Name**: e.g. `riskregister-app-<yourname>` — this becomes
      `https://<name>.azurewebsites.net`.
+   - **Subscription**: your main subscription is fine (it doesn't have
+     to match the database's).
    - **Publish**: **Code**.
    - **Runtime stack**: **Node 20 LTS**.
    - **Operating System**: **Linux**.
    - **Region**: same as the database.
-   - **Pricing plan**: create new → change size to **Basic B1**. (The
-     Free F1 tier works for a first look but sleeps when idle.)
+   - **Pricing plan**: create new → click **Explore pricing plans** /
+     change size → pick **Free F1**. £0 forever; the trade-offs are that
+     the app sleeps when idle (first visit after a quiet spell takes
+     ~30 seconds to wake) and there's a daily CPU quota — both fine for
+     a small number of users around review cycles. You can scale the
+     same app up to B1 later in one click (**Settings → Scale up**) with
+     no redeployment.
 3. **Review + create** → **Create**, then **Go to resource**.
 4. Left menu **Settings → Environment variables** → **App settings** →
    **+ Add** twice:
@@ -180,12 +203,18 @@ user/group**.
 | `password authentication failed` | Wrong password in the connection string, or special characters not URL-encoded |
 | Workflow fails at *Deploy* step | Publish profile secret stale (re-download after enabling SCM basic auth) or `AZURE_WEBAPP_NAME` doesn't match |
 | Workflow fails at *migrations* step | GitHub's runners can't reach the DB — remove the `DATABASE_URL` secret and run migrations from your machine (Part 3) instead |
-| Site is slow to respond after idle | Free/Basic tiers cold-start; **Configuration → General settings → Always on** (B1 and above) |
+| Site takes ~30s on first visit after idle | Expected on the F1 Free tier (it sleeps). If it becomes annoying: **Settings → Scale up** to B1 and enable **Configuration → General settings → Always on** |
+| Site stops responding late in the day | F1's daily CPU quota exhausted (check **Diagnose and solve problems**); resets daily, or scale up to B1 |
 
 ## Costs
 
-Roughly (region-dependent): App Service **B1** ≈ US$13/mo, PostgreSQL
-**B1ms** ≈ US$15–25/mo with storage. Both scale up in place later. Set
+With this guide's plan: App Service **F1** = £0. PostgreSQL **B1ms** ≈
+£12–14/month — £0 out of pocket if it's on sponsorship credit. If the
+database is on a paid subscription and the register is only used around
+periodic reviews, you can **stop the server** in between (Postgres
+resource → Overview → **Stop**) to pause compute billing; note Azure
+auto-restarts a stopped server after 7 days, and the app errors while
+the database is stopped. Both resources scale up in place later. Set
 Postgres **backup retention** (default 7 days) to match your
 records-management needs — relevant to the audit-trail requirement
 (FR-X1, NFR-3).
