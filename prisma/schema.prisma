@@ -155,6 +155,7 @@ model MitigationAction {
   sequence    Int
   description String
   ownerName   String?
+  ownerEmail  String?
   targetDate  DateTime?
   status      ActionStatus @default(NOT_STARTED)
   updatedAt   DateTime     @updatedAt

@@ -166,7 +166,10 @@ export default async function RiskPage({ params }: { params: { id: string } }) {
               <tr key={a.id}>
                 <td className="td font-mono text-ink/60">{a.sequence}</td>
                 <td className="td">{a.description}</td>
-                <td className="td text-ink/70">{a.ownerName ?? "—"}</td>
+                <td className="td text-ink/70">
+                  {a.ownerName ?? "—"}
+                  {a.ownerEmail && <span className="block text-[10px] text-ink/50">{a.ownerEmail}</span>}
+                </td>
                 <td className="td font-mono text-xs">{fmt(a.targetDate)}</td>
                 <td className="td">
                   <form action={setActionStatus.bind(null, a.id)} className="flex gap-1.5">
@@ -185,9 +188,10 @@ export default async function RiskPage({ params }: { params: { id: string } }) {
             )}
           </tbody>
         </table>
-        <form action={addAction.bind(null, risk.id)} className="mt-3 grid gap-2 sm:grid-cols-[1fr_12rem_10rem_auto] items-end">
+        <form action={addAction.bind(null, risk.id)} className="mt-3 grid gap-2 sm:grid-cols-[1fr_10rem_12rem_9.5rem_auto] items-end">
           <label><span className="lbl">New action</span><input name="description" className="inp" required minLength={3} /></label>
           <label><span className="lbl">Owner</span><input name="ownerName" className="inp" /></label>
+          <label><span className="lbl">Owner email (for reminders)</span><input type="email" name="ownerEmail" className="inp" /></label>
           <label><span className="lbl">Target date</span><input type="date" name="targetDate" className="inp" /></label>
           <button className="btn">Add action</button>
         </form>

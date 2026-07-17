@@ -99,6 +99,7 @@ export async function createRisk(form: FormData) {
         sequence,
         description,
         ownerName: String(form.get(`action_${n}_owner`) ?? "").trim() || null,
+        ownerEmail: String(form.get(`action_${n}_ownerEmail`) ?? "").trim().toLowerCase() || null,
         targetDate: rawDate ? new Date(rawDate) : null,
       },
     });
@@ -140,10 +141,11 @@ export async function setAppetite(riskId: string, form: FormData) {
 export async function addAction(riskId: string, form: FormData) {
   const description = z.string().min(3).parse(form.get("description"));
   const ownerName = String(form.get("ownerName") ?? "") || null;
+  const ownerEmail = String(form.get("ownerEmail") ?? "").trim().toLowerCase() || null;
   const rawDate = String(form.get("targetDate") ?? "");
   const sequence = (await db.mitigationAction.count({ where: { riskId } })) + 1;
   const created = await db.mitigationAction.create({
-    data: { riskId, sequence, description, ownerName, targetDate: rawDate ? new Date(rawDate) : null },
+    data: { riskId, sequence, description, ownerName, ownerEmail, targetDate: rawDate ? new Date(rawDate) : null },
   });
   await audit({ entity: "MitigationAction", entityId: created.id, action: "CREATE", after: created });
   revalidatePath(`/risks/${riskId}`);

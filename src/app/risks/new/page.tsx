@@ -61,7 +61,7 @@ export default async function NewRiskPage() {
             Initial mitigation actions — optional
           </legend>
           {[1, 2, 3].map((n) => (
-            <div key={n} className="grid gap-2 sm:grid-cols-[1fr_11rem_9.5rem] items-end">
+            <div key={n} className="grid gap-2 sm:grid-cols-[1fr_9rem_11rem_9.5rem] items-end">
               <label className="block">
                 <span className="lbl">Action {n}</span>
                 <input name={`action_${n}_description`} className="inp" placeholder={n === 1 ? "What will reduce this risk?" : ""} />
@@ -69,6 +69,10 @@ export default async function NewRiskPage() {
               <label className="block">
                 <span className="lbl">Owner</span>
                 <input name={`action_${n}_owner`} className="inp" />
+              </label>
+              <label className="block">
+                <span className="lbl">Owner email (for reminders)</span>
+                <input type="email" name={`action_${n}_ownerEmail`} className="inp" />
               </label>
               <label className="block">
                 <span className="lbl">Target date</span>

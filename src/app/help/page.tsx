@@ -173,6 +173,52 @@ export default function HelpPage() {
           highest of the four impacts — a risk is as serious as its worst dimension.
         </p>
         <ScoringDiagram />
+
+        <div className="grid gap-6 sm:grid-cols-2 max-w-2xl">
+          <div>
+            <h3 className="lbl">Probability levels (likelihood)</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                {[
+                  ["1", "Unlikely to occur"],
+                  ["2", "May occur occasionally"],
+                  ["3", "Is as likely as not to occur"],
+                  ["4", "Is likely to occur"],
+                  ["5", "Is almost certain to occur"],
+                ].map(([n, d]) => (
+                  <tr key={n}>
+                    <td className="td font-mono w-8">{n}</td>
+                    <td className="td text-ink/80">{d}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 className="lbl">Impact levels (each dimension)</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                {[
+                  ["1", "Very Low"],
+                  ["2", "Low"],
+                  ["3", "Medium"],
+                  ["4", "Very High"],
+                  ["5", "Critical"],
+                ].map(([n, d]) => (
+                  <tr key={n}>
+                    <td className="td font-mono w-8">{n}</td>
+                    <td className="td text-ink/80">{d}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p className="text-xs text-ink/50 max-w-2xl">
+          Level definitions are taken verbatim from the organisation's risk methodology
+          (probability and impact tables in the register's explanation sheet).
+        </p>
+
         <div className="grid gap-6 sm:grid-cols-[auto_1fr] items-start">
           <div>
             <h3 className="lbl">The matrix (methodology: docs/SCORING.md)</h3>
@@ -241,7 +287,11 @@ export default function HelpPage() {
           </div>
           <div>
             <dt className="font-medium">Track mitigation actions</dt>
-            <dd className="text-ink/70">On the risk page, add actions with an owner and target date; update their status from the same table. Actions past their target date count as overdue on the dashboard.</dd>
+            <dd className="text-ink/70">On the risk page (or when creating the risk), add actions with an owner, an owner email, and a target date; update their status from the same table. Actions past their target date are marked overdue and count on the dashboard.</dd>
+          </div>
+          <div>
+            <dt className="font-medium">Get reminded before actions fall due</dt>
+            <dd className="text-ink/70">Give each action an owner email. Every weekday morning the system emails each owner a digest of their actions that are overdue or due within the next week, with links to the risks.</dd>
           </div>
           <div>
             <dt className="font-medium">Record progress</dt>
