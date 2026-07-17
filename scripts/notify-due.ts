@@ -12,6 +12,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import nodemailer from "nodemailer";
+import { buildHtml, buildText, buildSubject, type ReminderAction } from "./email-templates";
 
 const db = new PrismaClient();
 
@@ -66,25 +67,25 @@ async function main() {
   });
 
   for (const [email, list] of byOwner) {
-    const overdue = list.filter((a) => (a.targetDate as Date) < now);
-    const upcoming = list.filter((a) => (a.targetDate as Date) >= now);
-    const line = (a: (typeof list)[number]) => {
-      const link = appUrl ? `${appUrl}/risks/${a.riskId}` : "";
-      return ` • [${a.risk.ref}] ${a.risk.title}\n   Action: ${a.description}\n   Target: ${fmt(a.targetDate as Date)}${link ? `\n   ${link}` : ""}`;
-    };
-    const parts: string[] = [];
-    if (overdue.length)
-      parts.push(`OVERDUE (${overdue.length}):\n${overdue.map(line).join("\n\n")}`);
-    if (upcoming.length)
-      parts.push(`Due within ${days} days (${upcoming.length}):\n${upcoming.map(line).join("\n\n")}`);
+    const reminders: ReminderAction[] = list.map((a) => ({
+      riskId: a.riskId,
+      riskRef: a.risk.ref,
+      riskTitle: a.risk.title,
+      description: a.description,
+      targetDate: a.targetDate as Date,
+      overdue: (a.targetDate as Date) < now,
+    }));
+    const overdueCount = reminders.filter((r) => r.overdue).length;
+    const upcomingCount = reminders.length - overdueCount;
 
     await transport.sendMail({
-      from: process.env.MAIL_FROM,
+      from: `"Risk Register" <${process.env.MAIL_FROM}>`,
       to: email,
-      subject: `Risk register: ${overdue.length ? `${overdue.length} overdue, ` : ""}${upcoming.length} action(s) due soon`,
-      text: `Hello,\n\nYou own the following mitigation action(s) on the risk register that are overdue or coming due:\n\n${parts.join("\n\n")}\n\nPlease update the action status on the risk page${appUrl ? ` (${appUrl})` : ""} once done.\n\n— Risk Register (automated daily check)`,
+      subject: buildSubject(overdueCount, upcomingCount),
+      text: buildText(reminders, appUrl, days),
+      html: buildHtml(reminders, appUrl, days),
     });
-    console.log(`Notified ${email}: ${overdue.length} overdue, ${upcoming.length} upcoming.`);
+    console.log(`Notified ${email}: ${overdueCount} overdue, ${upcomingCount} upcoming.`);
   }
 }
 
