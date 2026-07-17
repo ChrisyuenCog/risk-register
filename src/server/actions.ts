@@ -86,6 +86,25 @@ export async function createRisk(form: FormData) {
   await writeAssessment(risk.id, "INHERENT", form, "inherent_");
   await writeAssessment(risk.id, "RESIDUAL", form, "residual_");
 
+  // Optional initial mitigation actions (up to three rows on the form).
+  let sequence = 0;
+  for (const n of [1, 2, 3]) {
+    const description = String(form.get(`action_${n}_description`) ?? "").trim();
+    if (description.length < 3) continue;
+    sequence += 1;
+    const rawDate = String(form.get(`action_${n}_targetDate`) ?? "");
+    const created = await db.mitigationAction.create({
+      data: {
+        riskId: risk.id,
+        sequence,
+        description,
+        ownerName: String(form.get(`action_${n}_owner`) ?? "").trim() || null,
+        targetDate: rawDate ? new Date(rawDate) : null,
+      },
+    });
+    await audit({ entity: "MitigationAction", entityId: created.id, action: "CREATE", after: created });
+  }
+
   revalidatePath("/");
   redirect(`/risks/${risk.id}`);
 }

@@ -55,6 +55,33 @@ export default async function NewRiskPage() {
         </div>
 
         <ScoreFields prefix="inherent_" legend="Inherent assessment — before mitigation" />
+
+        <fieldset className="border border-line rounded-sm p-3 space-y-2">
+          <legend className="px-1 text-[11px] uppercase tracking-[0.08em] text-ink/60">
+            Initial mitigation actions — optional
+          </legend>
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="grid gap-2 sm:grid-cols-[1fr_11rem_9.5rem] items-end">
+              <label className="block">
+                <span className="lbl">Action {n}</span>
+                <input name={`action_${n}_description`} className="inp" placeholder={n === 1 ? "What will reduce this risk?" : ""} />
+              </label>
+              <label className="block">
+                <span className="lbl">Owner</span>
+                <input name={`action_${n}_owner`} className="inp" />
+              </label>
+              <label className="block">
+                <span className="lbl">Target date</span>
+                <input type="date" name={`action_${n}_targetDate`} className="inp" />
+              </label>
+            </div>
+          ))}
+          <p className="text-xs text-ink/60">
+            More can be added on the risk page after creation. Score the residual assessment below
+            assuming these actions succeed.
+          </p>
+        </fieldset>
+
         <ScoreFields prefix="residual_" legend="Residual assessment — assuming mitigations succeed" />
 
         <p className="text-xs text-ink/60">
