@@ -9,8 +9,9 @@
  *    in accountability order in the register).
  *  - Actions with their own ownerName that maps (e.g. a person's name) are
  *    matched on that first; otherwise the risk owner is used.
- *  - Names with no mapping (Leadership Team, External, Programme Director)
- *    are left blank and reported, so no mail goes to non-existent boxes.
+ *  - Names with no mapping are left blank and reported, so no mail goes
+ *    to non-existent boxes. (Leadership Team, External, and Programme
+ *    Director were mapped on 2026-07-20 per Clare's assignments.)
  *
  * Run via the "Backfill action owner emails" workflow (DATABASE_URL secret).
  */
@@ -32,6 +33,10 @@ const EMAILS: Record<string, string> = {
   victoria: "vcockle@cognitioneducation.com",
   vic: "vcockle@cognitioneducation.com",
   chris: "cyuen@cognitionlearninggroup.com",
+  // Assignments confirmed by Clare, 2026-07-20:
+  "leadership team": "ipaulsen@cognitioneducation.com", // PL4
+  external: "cyuen@cognitionlearninggroup.com", // IT5
+  "programme director": "ipaulsen@cognitioneducation.com",
 };
 
 function lookup(rawName: string): string | null {
