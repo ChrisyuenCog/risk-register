@@ -5,9 +5,12 @@
  */
 
 export type ReminderAction = {
-  riskId: string;
-  riskRef: string;
-  riskTitle: string;
+  /** Absolute link target for the item (risk page or action log). */
+  url: string;
+  /** Reference chip, e.g. "HS1" or "A3". */
+  refLabel: string;
+  /** Context line: risk title, or "Meeting action — <project>". */
+  title: string;
   description: string;
   targetDate: Date;
   overdue: boolean;
@@ -28,7 +31,7 @@ export function buildSubject(overdue: number, upcoming: number): string {
 
 export function buildText(actions: ReminderAction[], appUrl: string, days: number): string {
   const line = (a: ReminderAction) =>
-    ` • [${a.riskRef}] ${a.riskTitle}\n   Action: ${a.description}\n   Target: ${a.targetDate.toISOString().slice(0, 10)}${appUrl ? `\n   ${appUrl}/risks/${a.riskId}` : ""}`;
+    ` • [${a.refLabel}] ${a.title}\n   Action: ${a.description}\n   Target: ${a.targetDate.toISOString().slice(0, 10)}\n   ${a.url}`;
   const overdue = actions.filter((a) => a.overdue);
   const upcoming = actions.filter((a) => !a.overdue);
   const parts: string[] = [];
@@ -41,19 +44,19 @@ export function buildText(actions: ReminderAction[], appUrl: string, days: numbe
 function actionCard(a: ReminderAction, appUrl: string): string {
   const color = a.overdue ? "#A11E2D" : "#C9A227";
   const label = a.overdue ? "OVERDUE" : "DUE SOON";
-  const link = `${appUrl}/risks/${a.riskId}`;
+  const link = a.url;
   return `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D8DEE4;border-left:4px solid ${color};border-radius:3px;margin:0 0 12px 0;background:#FFFFFF;">
     <tr>
       <td style="padding:14px 16px;">
         <div style="font:600 11px/1.4 Arial,sans-serif;color:${color};letter-spacing:1px;">${label} &nbsp;·&nbsp; TARGET ${fmt(a.targetDate).toUpperCase()}</div>
         <div style="font:700 14px/1.5 Arial,sans-serif;color:#1B2733;padding-top:4px;">
-          <span style="font-family:Consolas,Menlo,monospace;background:#F4F6F8;border:1px solid #D8DEE4;border-radius:3px;padding:1px 6px;font-size:12px;">${esc(a.riskRef)}</span>
-          &nbsp;${esc(a.riskTitle)}
+          <span style="font-family:Consolas,Menlo,monospace;background:#F4F6F8;border:1px solid #D8DEE4;border-radius:3px;padding:1px 6px;font-size:12px;">${esc(a.refLabel)}</span>
+          &nbsp;${esc(a.title)}
         </div>
         <div style="font:400 13px/1.6 Arial,sans-serif;color:#3D4B59;padding-top:6px;">${esc(a.description)}</div>
         <div style="padding-top:12px;">
-          <a href="${link}" style="font:600 12px/1 Arial,sans-serif;color:#FFFFFF;background:#1B2733;text-decoration:none;padding:9px 14px;border-radius:3px;display:inline-block;">Open risk ${esc(a.riskRef)} &rarr;</a>
+          <a href="${link}" style="font:600 12px/1 Arial,sans-serif;color:#FFFFFF;background:#1B2733;text-decoration:none;padding:9px 14px;border-radius:3px;display:inline-block;">Open ${esc(a.refLabel)} &rarr;</a>
         </div>
       </td>
     </tr>

@@ -128,7 +128,7 @@ export default function HelpPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Help & guide</h1>
         <p className="text-sm text-ink/70 mt-1 max-w-2xl">
-          How this register works, the risk-management ideas behind it, and where to click. Ten
+          How the RICAL System works — Risks, Issues, Changes, Actions, and Lessons — the ideas behind it, and where to click. Ten
           minutes here covers everything a risk owner needs.
         </p>
         <nav className="mt-3 flex flex-wrap gap-2 text-sm">
@@ -261,7 +261,11 @@ export default function HelpPage() {
               ["Register", "Every risk in the active project. Search, filter by status/category, and click any column heading to sort (click again to reverse). Click a ref or title to open the risk."],
               ["New risk", "Create a risk: description, category (which assigns the reference, e.g. HS3), owners, and both assessments. Appetite defaults from the category."],
               ["Issues", "The issue log: escalated risks with severity, RAG status, and a link back to the source risk."],
+              ["Changes", "The change control log: raise a CCR for any change to agreed scope, deliverables, schedule, or budget; record the agreed change and close it. Fully audit-logged."],
+              ["Actions", "The action log: actions from meetings and reviews, with owner, email, and target date. Overdue and due-soon actions join the same weekday reminder emails as risk mitigations."],
+              ["Lessons", "Lessons learned: capture what future projects should do differently, as you go — not just at closure."],
               ["Import", "Migrate a register from Excel using the downloadable template. Rankings are recomputed on import; rejected rows are reported with row numbers."],
+              ["Export RICAL (dashboard)", "One click downloads this project's complete RICAL as an Excel workbook — all five logs — for tender packs, steering papers, or offline review."],
               ["Projects (header, right)", "Each project has its own register, references, and issue log. Click the project name to switch or create projects."],
               ["Help", "This page."],
             ].map(([name, desc]) => (

@@ -35,6 +35,13 @@ async function main() {
     },
     data: { status: "OVERDUE" },
   });
+  const flippedMeeting = await db.projectAction.updateMany({
+    where: {
+      status: { in: ["NOT_STARTED", "IN_PROGRESS"] },
+      targetDate: { lt: now },
+    },
+    data: { status: "OVERDUE" },
+  });
 
   // 2) Collect notifiable actions.
   const actions = await db.mitigationAction.findMany({
@@ -47,15 +54,45 @@ async function main() {
     include: { risk: { include: { project: true } } },
     orderBy: { targetDate: "asc" },
   });
+  const meetingActions = await db.projectAction.findMany({
+    where: {
+      status: { in: ["NOT_STARTED", "IN_PROGRESS", "OVERDUE"] },
+      targetDate: { not: null, lte: horizon },
+      ownerEmail: { not: null },
+    },
+    include: { project: true },
+    orderBy: { targetDate: "asc" },
+  });
 
-  const byOwner = new Map<string, typeof actions>();
-  for (const a of actions) {
-    const key = a.ownerEmail as string;
-    byOwner.set(key, [...(byOwner.get(key) ?? []), a]);
+  type Item = import("./email-templates").ReminderAction;
+  const items: Array<Item & { ownerEmail: string }> = [
+    ...actions.map((a) => ({
+      ownerEmail: a.ownerEmail as string,
+      url: `${appUrl}/risks/${a.riskId}`,
+      refLabel: a.risk.ref,
+      title: a.risk.title,
+      description: a.description,
+      targetDate: a.targetDate as Date,
+      overdue: (a.targetDate as Date) < now,
+    })),
+    ...meetingActions.map((a) => ({
+      ownerEmail: a.ownerEmail as string,
+      url: `${appUrl}/actions`,
+      refLabel: a.ref,
+      title: `Meeting action — ${a.project.name}`,
+      description: a.description,
+      targetDate: a.targetDate as Date,
+      overdue: (a.targetDate as Date) < now,
+    })),
+  ].sort((x, y) => x.targetDate.getTime() - y.targetDate.getTime());
+
+  const byOwner = new Map<string, typeof items>();
+  for (const it of items) {
+    byOwner.set(it.ownerEmail, [...(byOwner.get(it.ownerEmail) ?? []), it]);
   }
 
   console.log(
-    `Marked ${flipped.count} action(s) overdue; ${actions.length} notifiable action(s) across ${byOwner.size} owner(s).`
+    `Marked ${flipped.count} mitigation and ${flippedMeeting.count} meeting action(s) overdue; ${items.length} notifiable item(s) across ${byOwner.size} owner(s).`
   );
   if (byOwner.size === 0) return;
 
@@ -67,14 +104,7 @@ async function main() {
   });
 
   for (const [email, list] of byOwner) {
-    const reminders: ReminderAction[] = list.map((a) => ({
-      riskId: a.riskId,
-      riskRef: a.risk.ref,
-      riskTitle: a.risk.title,
-      description: a.description,
-      targetDate: a.targetDate as Date,
-      overdue: (a.targetDate as Date) < now,
-    }));
+    const reminders: ReminderAction[] = list.map(({ ownerEmail: _o, ...rest }) => rest);
     const overdueCount = reminders.filter((r) => r.overdue).length;
     const upcomingCount = reminders.length - overdueCount;
 

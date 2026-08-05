@@ -77,6 +77,8 @@ model Project {
   risks       Risk[]
   issues      Issue[]
   changes     ChangeRequest[]
+  actions     ProjectAction[]
+  lessons     Lesson[]
   reviews     ReviewCycle[]
   createdAt   DateTime        @default(now())
 }
@@ -240,4 +242,40 @@ model AuditLog {
   before    Json?
   after     Json?
   createdAt DateTime @default(now())
+}
+
+model ProjectAction {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id])
+  ref         String
+  description String
+  raisedBy    String?
+  raisedAt    DateTime     @default(now())
+  ownerName   String?
+  ownerEmail  String?
+  targetDate  DateTime?
+  progress    String?
+  status      ActionStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([projectId, ref])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  ref         String
+  description String
+  raisedBy    String?
+  raisedAt    DateTime @default(now())
+  ownerName   String?
+  impact      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, ref])
 }

@@ -4,8 +4,8 @@ import { getCurrentProject } from "@/server/project";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RiskRegister",
-  description: "Governed, auditable project risk management",
+  title: "RICAL System — Cognition Learning Group",
+  description: "Risk, Issue, Change, Action & Lessons management",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 />
               </span>
               <span className="font-semibold tracking-tight text-lg">
-                Risk<span className="text-paper/60">Register</span>
+                RICAL<span className="text-paper/60"> System</span>
               </span>
             </Link>
             <nav className="flex gap-4 text-sm">
@@ -35,6 +35,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/risks" className="hover:underline underline-offset-4">Register</Link>
               <Link href="/risks/new" className="hover:underline underline-offset-4">New risk</Link>
               <Link href="/issues" className="hover:underline underline-offset-4">Issues</Link>
+              <Link href="/changes" className="hover:underline underline-offset-4">Changes</Link>
+              <Link href="/actions" className="hover:underline underline-offset-4">Actions</Link>
+              <Link href="/lessons" className="hover:underline underline-offset-4">Lessons</Link>
               <Link href="/import" className="hover:underline underline-offset-4">Import</Link>
               <Link href="/help" className="hover:underline underline-offset-4">Help</Link>
             </nav>

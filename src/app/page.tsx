@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { dashboardData } from "@/server/register";
 import { getCurrentProject } from "@/server/project";
+import { db } from "@/server/db";
 import { Matrix, RatingBadge, RANKING_LABEL, RANKING_BG } from "@/components/rating";
 import type { Ranking } from "@prisma/client";
 
@@ -11,12 +12,20 @@ const ORDER: Ranking[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "VERY_LOW"];
 export default async function Dashboard() {
   const project = await getCurrentProject();
   const d = await dashboardData(project.id);
+  const [openChanges, openActions, lessonCount] = await Promise.all([
+    db.changeRequest.count({ where: { projectId: project.id, closed: false } }),
+    db.projectAction.count({ where: { projectId: project.id, status: { not: "COMPLETE" } } }),
+    db.lesson.count({ where: { projectId: project.id } }),
+  ]);
   const openWithResidual = d.open.filter((r) => r.residual).length || 1;
 
   return (
     <div className="space-y-6">
       <div className="flex items-baseline justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-xl font-semibold tracking-tight">Live dashboard <span className="text-ink/50 font-normal">— {project.name}</span></h1>
+        <a href="/api/export" className="btn-quiet text-sm" title="Download this project's full RICAL as Excel">Export RICAL (Excel)</a>
+      </div>
         <p className="text-sm text-ink/60">
           {d.open.length} open · {d.escalated} escalated · {d.closed} closed
         </p>
@@ -90,7 +99,22 @@ export default async function Dashboard() {
           </p>
         </section>
 
-        <section className="card p-4">
+              <div className="grid gap-3 sm:grid-cols-3">
+        <Link href="/changes" className="card p-3 hover:border-ink/40">
+          <p className="lbl">Open change requests</p>
+          <p className="text-2xl font-semibold">{openChanges}</p>
+        </Link>
+        <Link href="/actions" className="card p-3 hover:border-ink/40">
+          <p className="lbl">Open meeting actions</p>
+          <p className="text-2xl font-semibold">{openActions}</p>
+        </Link>
+        <Link href="/lessons" className="card p-3 hover:border-ink/40">
+          <p className="lbl">Lessons captured</p>
+          <p className="text-2xl font-semibold">{lessonCount}</p>
+        </Link>
+      </div>
+
+<section className="card p-4">
           <h2 className="lbl">Top risks by residual rating</h2>
           <ul className="divide-y divide-line">
             {d.topRisks.map((r) => (
