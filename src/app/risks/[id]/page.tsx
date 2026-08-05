@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/server/db";
+import { isAdmin } from "@/server/admin";
+import { deleteRisk } from "@/server/admin-actions";
 import { breachesAppetite, type Ranking as RankingT } from "@/lib/scoring";
 import {
   addAction,
@@ -271,6 +273,23 @@ export default async function RiskPage({ params }: { params: { id: string } }) {
       </section>
 
       <section className="card p-4">
+        {isAdmin() && (
+          <div className="card p-4 border-rating-critical/40 mb-4">
+            <h2 className="lbl text-rating-critical">Danger zone — administrator only</h2>
+            <p className="text-xs text-ink/60 mt-1 max-w-2xl">
+              Permanently deletes this risk with its assessments, actions, and notes. Only for
+              removing test data — real risks should be closed, never deleted. Escalated risks
+              cannot be deleted. A DELETE entry with a full snapshot stays in the audit trail.
+            </p>
+            <form action={deleteRisk.bind(null, risk.id)} className="mt-3 flex gap-2 items-end">
+              <label className="block">
+                <span className="lbl">Type {risk.ref} to confirm</span>
+                <input name="confirmRef" className="inp" placeholder={risk.ref} required />
+              </label>
+              <button className="btn bg-rating-critical hover:bg-rating-critical/90">Delete risk</button>
+            </form>
+          </div>
+        )}
         <h2 className="lbl">Audit trail (latest {auditRows.length})</h2>
         <table className="w-full text-sm">
           <thead>
