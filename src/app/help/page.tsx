@@ -265,6 +265,7 @@ export default function HelpPage() {
               ["Actions", "The action log: actions from meetings and reviews, with owner, email, and target date. Overdue and due-soon actions join the same weekday reminder emails as risk mitigations."],
               ["Lessons", "Lessons learned: capture what future projects should do differently, as you go — not just at closure."],
               ["Import", "Migrate a register from Excel using the downloadable template. Rankings are recomputed on import; rejected rows are reported with row numbers."],
+              ["Activity", "The most recent changes across the whole system — who did what, when — filterable by person. Each risk's own page keeps its full history."],
               ["Export RICAL (dashboard)", "One click downloads this project's complete RICAL as an Excel workbook — all five logs — for tender packs, steering papers, or offline review."],
               ["Projects (header, right)", "Each project has its own register, references, and issue log. Click the project name to switch or create projects."],
               ["Help", "This page."],
