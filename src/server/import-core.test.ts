@@ -26,7 +26,7 @@ describe("parseRegisterWorkbook", () => {
     expect(errors).toEqual([]);
     expect(rows).toHaveLength(1);
     const r = rows[0];
-    expect(r.category).toBe("HS");
+    expect(r.category).toBe("hs"); // raw cell; codes uppercase at resolution
     expect(r.appetite).toBe("MEDIUM");
     expect(r.inherent).toEqual({ likelihood: 3, cost: 4, time: 3, quality: 2, reputation: 4 });
     expect(r.actions).toHaveLength(1);
@@ -56,6 +56,6 @@ describe("parseRegisterWorkbook", () => {
     const { rows, errors } = parseRegisterWorkbook(buildTemplateWorkbook());
     expect(errors).toEqual([]);
     expect(rows).toHaveLength(1);
-    expect(rows[0].category).toBe("HS");
+    expect(rows[0].category).toBe("hs");
   });
 });
