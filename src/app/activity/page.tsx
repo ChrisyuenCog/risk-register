@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/server/db";
+import { canAccessProject } from "@/server/access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,56 +13,56 @@ const ACTION_STYLE: Record<string, string> = {
   REOPEN: "text-rating-medium",
 };
 
-type Described = { label: string; href: string | null };
+type Described = { label: string; href: string | null; projectId: string | null };
 
 async function describe(entity: string, entityId: string): Promise<Described> {
   try {
     switch (entity) {
       case "Risk": {
         const r = await db.risk.findUnique({ where: { id: entityId } });
-        return r ? { label: `${r.ref} — ${r.title}`, href: `/risks/${r.id}` } : { label: entityId, href: null };
+        return r ? { label: `${r.ref} — ${r.title}`, href: `/risks/${r.id}`, projectId: r.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "RiskAssessment": {
         const a = await db.riskAssessment.findUnique({ where: { id: entityId }, include: { risk: true } });
         return a
-          ? { label: `${a.risk.ref} ${a.kind.toLowerCase()} assessment`, href: `/risks/${a.riskId}` }
-          : { label: entityId, href: null };
+          ? { label: `${a.risk.ref} ${a.kind.toLowerCase()} assessment`, href: `/risks/${a.riskId}`, projectId: a.risk.projectId }
+          : { label: entityId, href: null, projectId: null };
       }
       case "MitigationAction": {
         const m = await db.mitigationAction.findUnique({ where: { id: entityId }, include: { risk: true } });
         return m
-          ? { label: `${m.risk.ref} action: ${m.description.slice(0, 50)}`, href: `/risks/${m.riskId}` }
-          : { label: entityId, href: null };
+          ? { label: `${m.risk.ref} action: ${m.description.slice(0, 50)}`, href: `/risks/${m.riskId}`, projectId: m.risk.projectId }
+          : { label: entityId, href: null, projectId: null };
       }
       case "ProgressNote": {
         const n = await db.progressNote.findUnique({ where: { id: entityId }, include: { risk: true } });
-        return n ? { label: `${n.risk.ref} progress note`, href: `/risks/${n.riskId}` } : { label: entityId, href: null };
+        return n ? { label: `${n.risk.ref} progress note`, href: `/risks/${n.riskId}`, projectId: n.risk.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "Issue": {
         const i = await db.issue.findUnique({ where: { id: entityId } });
-        return i ? { label: `${i.ref} — ${i.description.slice(0, 50)}`, href: "/issues" } : { label: entityId, href: null };
+        return i ? { label: `${i.ref} — ${i.description.slice(0, 50)}`, href: "/issues", projectId: i.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "ChangeRequest": {
         const c = await db.changeRequest.findUnique({ where: { id: entityId } });
-        return c ? { label: `${c.ref} — ${c.description.slice(0, 50)}`, href: "/changes" } : { label: entityId, href: null };
+        return c ? { label: `${c.ref} — ${c.description.slice(0, 50)}`, href: "/changes", projectId: c.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "ProjectAction": {
         const a = await db.projectAction.findUnique({ where: { id: entityId } });
-        return a ? { label: `${a.ref} — ${a.description.slice(0, 50)}`, href: "/actions" } : { label: entityId, href: null };
+        return a ? { label: `${a.ref} — ${a.description.slice(0, 50)}`, href: "/actions", projectId: a.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "Lesson": {
         const l = await db.lesson.findUnique({ where: { id: entityId } });
-        return l ? { label: `${l.ref} — ${l.description.slice(0, 50)}`, href: "/lessons" } : { label: entityId, href: null };
+        return l ? { label: `${l.ref} — ${l.description.slice(0, 50)}`, href: "/lessons", projectId: l.projectId } : { label: entityId, href: null, projectId: null };
       }
       case "Project": {
         const p = await db.project.findUnique({ where: { id: entityId } });
-        return p ? { label: `Project: ${p.name}`, href: "/projects" } : { label: entityId, href: null };
+        return p ? { label: `Project: ${p.name}`, href: "/projects", projectId: p.id } : { label: entityId, href: null, projectId: null };
       }
       default:
-        return { label: entityId, href: null };
+        return { label: entityId, href: null, projectId: null };
     }
   } catch {
-    return { label: entityId, href: null };
+    return { label: entityId, href: null, projectId: null };
   }
 }
 
@@ -83,13 +84,25 @@ export default async function ActivityPage({
           (e.actor?.email ?? "").toLowerCase().includes(actorFilter)
       )
     : entries;
-  const described = await Promise.all(filtered.map((e) => describe(e.entity, e.entityId)));
+  const describedAll = await Promise.all(filtered.map((e) => describe(e.entity, e.entityId)));
+  const accessCache = new Map<string, boolean>();
+  const visible: boolean[] = [];
+  for (const d of describedAll) {
+    if (!d.projectId) {
+      visible.push(true); // unresolvable/system entries carry no project data
+      continue;
+    }
+    if (!accessCache.has(d.projectId)) accessCache.set(d.projectId, await canAccessProject(d.projectId));
+    visible.push(accessCache.get(d.projectId) as boolean);
+  }
+  const rows = filtered.filter((_, i) => visible[i]);
+  const described = describedAll.filter((_, i) => visible[i]);
 
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold tracking-tight">Activity</h1>
       <p className="text-sm text-ink/70 max-w-3xl">
-        The most recent {filtered.length} audit-trail entries across all projects — who changed
+        The most recent {rows.length} audit-trail entries across all projects — who changed
         what, when. The full history of any risk is on its own page.
       </p>
       <form method="get" className="flex gap-2 items-end">
@@ -116,7 +129,7 @@ export default async function ActivityPage({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((e, i) => (
+            {rows.map((e, i) => (
               <tr key={e.id}>
                 <td className="td font-mono text-xs whitespace-nowrap">
                   {e.createdAt.toISOString().replace("T", " ").slice(0, 16)}
@@ -142,7 +155,7 @@ export default async function ActivityPage({
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td className="td text-ink/60" colSpan={4}>
                   No activity matches that filter.

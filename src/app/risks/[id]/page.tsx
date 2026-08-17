@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/server/db";
 import { isAdmin } from "@/server/admin";
+import { assertProjectAccess } from "@/server/access";
 import { deleteRisk } from "@/server/admin-actions";
 import { breachesAppetite, type Ranking as RankingT } from "@/lib/scoring";
 import {
@@ -78,6 +79,7 @@ export default async function RiskPage({ params }: { params: { id: string } }) {
       issue: true,
     },
   });
+  if (risk) await assertProjectAccess(risk.projectId);
   if (!risk) notFound();
 
   const inherent = risk.assessments.find((a) => a.kind === "INHERENT");

@@ -72,6 +72,7 @@ model Project {
   name        String
   client      String?
   division    String?
+  restricted  Boolean         @default(false)
   members     ProjectMember[]
   categories  RiskCategory[]
   risks       Risk[]
