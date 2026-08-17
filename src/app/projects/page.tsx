@@ -1,6 +1,7 @@
 import { listProjects, getCurrentProject } from "@/server/project";
 import { switchProject, createProject, setProjectRestricted, addProjectMember, removeProjectMember } from "@/server/project-actions";
 import { isAdmin } from "@/server/admin";
+import { slugify } from "@/lib/slug";
 import { db } from "@/server/db";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,8 @@ export default async function ProjectsPage() {
               </p>
               <p className="text-xs text-ink/60">
                 {p.client ?? "—"} · {p._count.risks} risk{p._count.risks === 1 ? "" : "s"} ·{" "}
-                {p._count.issues} issue{p._count.issues === 1 ? "" : "s"}
+                {p._count.issues} issue{p._count.issues === 1 ? "" : "s"} ·{" "}
+                <span className="font-mono text-ink/40" title="Direct link — opens the app switched to this project">/p/{slugify(p.name)}</span>
               </p>
             </div>
             {p.id !== current.id && (
