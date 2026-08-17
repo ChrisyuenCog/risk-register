@@ -48,7 +48,18 @@ export async function importRegister(form: FormData) {
   const failures: string[] = [...errors];
 
   for (const row of rows) {
-    const category = byCode.get(row.category);
+    // "Category code" accepts either a bare code ("HS") or "CODE: Name"
+    // ("ST: Strategic"), creating the category on first use so registers
+    // with their own taxonomy import without pre-setup.
+    const [rawCode, ...nameParts] = row.category.split(":");
+    const code = rawCode.trim().toUpperCase();
+    let category = byCode.get(code);
+    if (!category && nameParts.length > 0) {
+      category = await db.riskCategory.create({
+        data: { projectId: project.id, code, name: nameParts.join(":").trim() || code },
+      });
+      byCode.set(code, category);
+    }
     if (!category) {
       failures.push(`"${row.title}": unknown category code ${row.category}`);
       continue;

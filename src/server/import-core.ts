@@ -112,7 +112,7 @@ export function parseRegisterWorkbook(data: ArrayBuffer | Buffer): ImportResult 
       .filter((a) => a.description.length > 0);
 
     const candidate = {
-      category: String(cell(rec, "Category code") ?? "").trim().toUpperCase(),
+      category: String(cell(rec, "Category code") ?? "").trim(),
       ref: cell(rec, "Ref"),
       title: String(cell(rec, "Title") ?? "").trim(),
       description: String(cell(rec, "Description") ?? "").trim(),
