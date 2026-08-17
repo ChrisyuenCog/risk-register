@@ -56,6 +56,6 @@ describe("parseRegisterWorkbook", () => {
     const { rows, errors } = parseRegisterWorkbook(buildTemplateWorkbook());
     expect(errors).toEqual([]);
     expect(rows).toHaveLength(1);
-    expect(rows[0].category).toBe("hs");
+    expect(rows[0].category).toBe("HS"); // template example row uses HS verbatim
   });
 });
