@@ -21,7 +21,7 @@ const validRow = [
 ];
 
 describe("parseRegisterWorkbook", () => {
-  it("maps a valid row, normalising category and appetite case", () => {
+  it("maps a valid row, preserving category cell case (codes are normalised at resolution) and normalising appetite", () => {
     const { rows, errors } = parseRegisterWorkbook(workbookFrom([validRow]));
     expect(errors).toEqual([]);
     expect(rows).toHaveLength(1);
