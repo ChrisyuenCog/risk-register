@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.cfg.outputs.configured == 'true'
         with:
-          node-version: 22
+          node-version: 24
       - name: Install
         if: steps.cfg.outputs.configured == 'true'
         run: npm ci
