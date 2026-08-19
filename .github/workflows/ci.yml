@@ -6,6 +6,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Dummy: prisma validate/generate resolve env("DATABASE_URL") without
+      # connecting; tests and build never touch a database in CI.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,5 +20,3 @@ jobs:
       - run: npx prisma generate
       - run: npm test
       - run: npm run build
-        env:
-          DATABASE_URL: "postgresql://app:app@localhost:5432/riskregister"
